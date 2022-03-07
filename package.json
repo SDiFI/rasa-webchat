@@ -1,10 +1,10 @@
 {
-  "name": "rasa-webchat",
   "version": "1.0.1",
+  "name": "@sdifi/rasa-webchat",
   "description": "Chat web widget for React apps and Rasa Core chatbots",
   "module": "module/index.js",
   "main": "lib/index.js",
-  "repository": "git@https://github.com/botfront/rasa-webchat.git",
+  "repository": "git@https://github.com/sdifi/rasa-webchat.git",
   "author": "",
   "license": "Apache-2.0",
   "scripts": {
