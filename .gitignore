@@ -12,3 +12,5 @@ module
 
 # Test files
 coverage
+
+src/proto/
