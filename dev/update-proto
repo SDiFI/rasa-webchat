@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+set -ex -o pipefail
+
+TIRO_SPEECH_CORE_COMMIT=${TIRO_SPEECH_CORE_COMMIT:-3d403e5}
+OUT_DIR=src/proto
+PROTOC=${PROTOC:-npx @protobuf-ts/protoc}
+
+if [ -z "$TIRO_PROTOS_DIR" ]; then
+  tmpdir=$(mktemp -d "${TMP:-/tmp}/rasa-webchat.XXXX")
+  trap 'rm -rf $tmpdir' EXIT
+
+  url="https://github.com/tiro-is/tiro-speech-core/archive/${TIRO_SPEECH_CORE_COMMIT}.tar.gz"
+
+  { curl -L "$url" -o - || wget "$url" -O - ; } \
+    | tar --strip-components=2 --wildcards \
+          -C "$tmpdir" -zxvf - '*/proto/**/*.proto'
+
+  TIRO_PROTOS_DIR="$tmpdir"
+fi
+
+mkdir -p $OUT_DIR
+
+$PROTOC \
+  --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts \
+  --js_out=import_style=commonjs,binary:${OUT_DIR} \
+  --ts_out=service=grpc-web:src/proto "-I${TIRO_PROTOS_DIR}" \
+  tiro/speech/v1alpha/speech.proto
+
+GOOGLE_PROTOS=(
+  google/rpc/status.proto
+  google/api/http.proto
+  google/api/client.proto
+  google/api/annotations.proto
+  google/api/field_behavior.proto
+)
+
+$PROTOC \
+  --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts \
+  --js_out=import_style=commonjs,binary:${OUT_DIR} \
+  "-I${TIRO_PROTOS_DIR}" "${GOOGLE_PROTOS[@]}"
